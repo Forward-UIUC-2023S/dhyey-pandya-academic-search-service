@@ -5,7 +5,7 @@ import elasticsearch from 'elasticsearch';
 
 const client = new elasticsearch.Client({
   hosts: [
-          'http://172.22.224.150:9200'
+          'http://172.22.224.151:9200'
           // 'http://172.22.224.151:9200',
           // 'http://172.22.224.154:9200',
           // 'http://172.22.224.153:9200'
@@ -82,6 +82,15 @@ function App() {
   const [authorFilter, setAuthorFilter] = useState('');
   const [options, setOptions] = useState([]);
   const [selectedOption, setSelectedOption] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const resultsPerPage = 10; // Number of results to display per page
+
+  const indexOfLastResult = currentPage * resultsPerPage;
+  const indexOfFirstResult = indexOfLastResult - resultsPerPage;
+  const currentResults = results.slice(indexOfFirstResult, indexOfLastResult);
+
+  const totalPages = Math.ceil(results.length / resultsPerPage);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -122,7 +131,7 @@ function App() {
       query = {
         bool: {
           must: [
-            { match: { abstract: searchTerm } },
+            { match_phrase: { abstract: searchTerm } },
             { match: { "authorships.author.display_name": authorFilter } },
             { match: { "authorships.institutions.display_name": selectedOption } }
           ]
@@ -157,12 +166,12 @@ function App() {
       index: 'openalex_works*',
       body: {
         query,
-        size: 10,
+        size: 100,
         _source: ['display_name', 'publication_date', 'ids', 'authorships', 'abstract']
       }
     }).then(response => {
       const hits = response.hits.hits;
-
+      
       // const uniqueHits = Array.from(new Set(hits.map(hit => hit._source.id)))
       //   .map(id => {
       //     return hits.find(hit => hit._source.id === id);
@@ -224,9 +233,9 @@ function App() {
           <Dropdown options={options} onSelect={handleSelect} />
        </div>
       <div style={{ marginTop: '50px', width: '60%' }}>
-        <span>Showing top 10 results...</span>
+        <span>Showing results {indexOfFirstResult + 1} - {indexOfLastResult} of {results.length}</span>
         <ul>
-          {results.map(result => (
+          {currentResults.map(result => (
             <li key={result._id}>
               <h2><SearchResult text={result._source.display_name} searchQuery={searchTerm}/></h2>
               <p>Authors: <SearchResult text={result._source.authorships.map(authorship => authorship.author.display_name).join(", ")} searchQuery={authorFilter}/></p>
@@ -236,6 +245,17 @@ function App() {
             </li>
           ))}
         </ul>
+          <div>
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              key={index + 1}
+              onClick={() => setCurrentPage(index + 1)}
+              style={{ fontWeight: currentPage === index + 1 ? 'bold' : 'normal' }}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

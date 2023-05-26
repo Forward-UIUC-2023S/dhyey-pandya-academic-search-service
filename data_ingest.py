@@ -20,15 +20,13 @@ JSON_FILE_NAME = "part_000.txt"
 THREAD_COUNT = 4
 num_records = 0
 
+
 def get_abstract(inverted_index):
-    # If the inverted index is empty, return None
     if not inverted_index:
         return None
 
-    # Determine the length of the original text
     length = max(max(v) for v in inverted_index.values())
 
-    # Create a list of the words in the original text, with empty strings where there are no words
     words = [""] * (length + 1)
     for k, v in inverted_index.items():
         for pos in v:
@@ -54,9 +52,10 @@ def get_data(data_dir):
                             print(f"{num_records} processed")
                         num_records += 1
                         doc = json.loads(line)
-                        doc["abstract"] = get_abstract(doc.get("abstract_inverted_index"))
+                        doc["abstract"] = get_abstract(
+                            doc.get("abstract_inverted_index")
+                        )
                         yield doc
-                        
 
 
 parallel = True
