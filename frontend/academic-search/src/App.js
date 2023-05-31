@@ -5,11 +5,10 @@ import elasticsearch from 'elasticsearch';
 
 const client = new elasticsearch.Client({
   hosts: [
-          'http://172.22.224.151:9200'
-          // 'http://172.22.224.151:9200',
-          // 'http://172.22.224.154:9200',
-          // 'http://172.22.224.153:9200'
-]
+    'http://172.22.224.151:9200',
+    'http://172.22.224.152:9200',
+    'http://172.22.224.154:9200'
+  ]
 });
 
 
@@ -100,14 +99,14 @@ function App() {
           body: {
             size: 0,
             query: {
-              prefix: {
-                'international.display_name.en.keyword': 'University',
+              term: {
+                'type.keyword': 'education',
               },
             },
             aggs: {
               unique_institutions: {
                 terms: {
-                  field: 'international.display_name.en.keyword',
+                  field: 'display_name.keyword',
                   size: 65536,
                 },
               },
@@ -115,6 +114,7 @@ function App() {
           },
         });
         const uniqueoptions = response.aggregations.unique_institutions.buckets;
+        // console.log(uniqueoptions);
         setOptions(uniqueoptions);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -151,7 +151,7 @@ function App() {
       };
     } else if (selectedOption) {
       query = {
-        match: {
+        term: {
           "authorships.institutions.display_name": selectedOption
         }
       };
@@ -162,8 +162,10 @@ function App() {
       return;
     }
 
+    // console.log(query);
+
     client.search({
-      index: 'openalex_works*',
+      index: 'openalex_works',
       body: {
         query,
         size: 100,
@@ -171,13 +173,13 @@ function App() {
       }
     }).then(response => {
       const hits = response.hits.hits;
-      
+
       // const uniqueHits = Array.from(new Set(hits.map(hit => hit._source.id)))
       //   .map(id => {
       //     return hits.find(hit => hit._source.id === id);
       //   });
       setResults(hits);
-      // console.log(hits);
+      console.log(hits);
     });
   };
 
@@ -198,7 +200,7 @@ function App() {
   const handleSelect = (value) => {
     setSelectedOption(value);
   };
-  
+
   const AbstractButton = ({ abstract }) => {
     const [showAbstract, setShowAbstract] = useState(false);
 
@@ -220,32 +222,32 @@ function App() {
         <h1>Academic Search Engine</h1>
       </div>
       <div style={{ marginTop: '50px' }}>
-        <input type="text" placeholder="Search Abstract" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} style={{ width: '500px' }}  />
+        <input type="text" placeholder="Search Abstract" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} style={{ width: '500px' }} />
         <button onClick={handleSearch}>Search</button>
       </div>
-      <br/>
+      <br />
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
         <span>Author :</span>
         <input type="text" placeholder="Type Author Name" value={authorFilter} onChange={handleAuthorFilterChange} style={{ width: '200px' }} />
       </div>
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
         <span>Insitution : </span>
-          <Dropdown options={options} onSelect={handleSelect} />
-       </div>
+        <Dropdown options={options} onSelect={handleSelect} />
+      </div>
       <div style={{ marginTop: '50px', width: '60%' }}>
         <span>Showing results {indexOfFirstResult + 1} - {indexOfLastResult} of {results.length}</span>
         <ul>
           {currentResults.map(result => (
             <li key={result._id}>
-              <h2><SearchResult text={result._source.display_name} searchQuery={searchTerm}/></h2>
-              <p>Authors: <SearchResult text={result._source.authorships.map(authorship => authorship.author.display_name).join(", ")} searchQuery={authorFilter}/></p>
+              <h2><SearchResult text={result._source.display_name} searchQuery={searchTerm} /></h2>
+              <p>Authors: <SearchResult text={result._source.authorships.map(authorship => authorship.author.display_name).join(", ")} searchQuery={authorFilter} /></p>
               <p>Publication Date: {result._source.publication_date}</p>
               <a href={`https://doi.org/${result._source.ids.doi}`}>{result._source.ids.doi}</a>
               <AbstractButton abstract={result._source.abstract} />
             </li>
           ))}
         </ul>
-          <div>
+        <div>
           {Array.from({ length: totalPages }, (_, index) => (
             <button
               key={index + 1}
