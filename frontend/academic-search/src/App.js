@@ -7,7 +7,8 @@ const client = new elasticsearch.Client({
   hosts: [
     'http://172.22.224.151:9200',
     'http://172.22.224.152:9200',
-    'http://172.22.224.154:9200'
+    'http://172.22.224.154:9200',
+    'http://172.22.224.150:9200'
   ]
 });
 
@@ -132,7 +133,7 @@ function App() {
       query = {
         bool: {
           must: [
-            { match_phrase: { abstract: searchTerm } },
+            { match: { abstract: searchTerm } },
             { match: { "authorships.author.display_name": authorFilter } },
             { match: { "authorships.institutions.display_name": selectedOption } }
           ]
@@ -145,6 +146,16 @@ function App() {
           must: [
             { match: { "authorships.author.display_name": authorFilter } },
             { match: { "authorships.institutions.display_name": selectedOption } }
+          ]
+        }
+      };
+    }
+    else if (authorFilter && searchTerm) {
+      query = {
+        bool: {
+          must: [
+            { match: { abstract: searchTerm } },
+            { match: { "authorships.author.display_name": authorFilter } }
           ]
         }
       };
@@ -177,7 +188,7 @@ function App() {
       return;
     }
 
-    console.log(query);
+    // console.log(query);
     return query;
   }
 
@@ -191,7 +202,7 @@ function App() {
         query,
         size: resultsPerPage,
         track_total_hits: true,
-        _source: ['display_name', 'publication_date', 'ids', 'authorships', 'highlight', 'abstract'],
+        _source: ['display_name', 'publication_date', 'ids', 'authorships', 'highlight'],
         highlight: {
           tags_schema: 'styled',
           fields: {
@@ -202,6 +213,7 @@ function App() {
           }
         },
         sort: [
+          // { publication_date: 'desc'},
           { _score: { order: 'desc' } },
           { id: { order: 'asc' } }
         ]
@@ -230,14 +242,14 @@ function App() {
       const lastResultSort = lastResult.sort; // Assuming your results have a sort field
       const startTime = new Date().getTime();
 
-      console.log(lastResultSort);
+      // console.log(lastResultSort);
       const response = await client.search({
         index: 'openalex_works',
         body: {
           query,
           size: resultsPerPage,
           track_total_hits: false,
-          _source: ['display_name', 'publication_date', 'ids', 'authorships', 'highlight', 'abstract'],
+          _source: ['display_name', 'publication_date', 'ids', 'authorships', 'highlight'],
           highlight: {
             tags_schema: 'styled',
             fields: {
@@ -338,7 +350,7 @@ function App() {
         <h1>Academic Search Engine</h1>
       </div>
       <div style={{ marginTop: '50px' }}>
-        <input type="text" placeholder="Search Abstract" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} style={{ width: '500px' }} />
+        <input type="text" placeholder="Search Abstract" value={searchTerm} onKeyPress={handleKeyPress} onChange={e => setSearchTerm(e.target.value)} style={{ width: '500px' }} />
         <button onClick={handleSearch}>Search</button>
       </div>
       <br />

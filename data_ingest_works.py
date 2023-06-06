@@ -4,7 +4,6 @@ import gzip
 import json
 import jsonlines
 import elasticsearch.helpers
-from memory_profiler import profile
 
 from datetime import datetime
 from elasticsearch import Elasticsearch
@@ -12,16 +11,13 @@ from ssl import create_default_context
 
 tbeg = datetime.now()
 
-CHUNK_SIZE = 300
-MAX_CHUNK_BYTES = 10* 1024 * 1024
+CHUNK_SIZE = 750
+MAX_CHUNK_BYTES = 15* 1024 * 1024
 INDEX_NAME = "openalex_works"
 JSON_DIR_NAME = "/scratch/dhyeyhp2/works/openalex-snapshot/"
-THREAD_COUNT = 4
+THREAD_COUNT = 2
 num_records = 0
 
-completed = []
-with open("completed_files.txt", "r") as f:
-    completed = [fl.strip() for fl in f.readlines()]
 
 def get_abstract(inverted_index):
     # If the inverted index is empty, return None
@@ -41,28 +37,20 @@ def get_abstract(inverted_index):
     text = " ".join(words).strip()
     return text
 
-
-# generator or reading in the JSON data
-@profile
 def get_data(data_dir):
     if os.path.isdir(data_dir):
         # loops over each part-000 files in the updated_date dir
         for filename in os.listdir(data_dir):
-            if filename.endswith(".gz"):
+            if filename.endswith(".gz"): # filename < "part-007.gz"
                 file_path = os.path.join(data_dir, filename)
+                print(f"Indexing file {filename}")
+                #if "part_027" not in filename or "part_026" not in filename:
+                 #   continue
 
-                with gzip.GzipFile(file_path, "r") as f:
-                    chunk_size = 1024  # Adjust the chunk size as needed
-                    while True:
-                        chunk = f.read(chunk_size)
-                        if not chunk:
-                            break
-                        process_chunk(chunk)
-                        
                 with gzip.open(file_path, "rt") as f:
                     for line in f:
                         global num_records
-                        if num_records % 1000000 == 0:
+                        if num_records % 500000 == 0:
                             print(f"{num_records} processed")
                         num_records += 1
                         doc = json.loads(line)
@@ -78,7 +66,6 @@ es = Elasticsearch(
         [
         "http://172.22.224.151:9200",
         "http://172.22.224.152:9200",
-        "http://172.22.224.153:9200"
         ],
         request_timeout = 10000
 )
@@ -89,9 +76,8 @@ print(es.info())
 
 # #loop over the main data dir to find the updated_date paths
 for updated_date_dir in os.listdir(JSON_DIR_NAME):
-     
-    # if "2023-" not in updated_date_dir or '2023-02-18' in updated_date_dir:
-     #    continue
+     if updated_date_dir != "updated_date=2023-04-25":
+         continue
      #flag = False
      #for c in completed:
          #if updated_date_dir in c:
@@ -114,11 +100,12 @@ for updated_date_dir in os.listdir(JSON_DIR_NAME):
                     max_chunk_bytes=MAX_CHUNK_BYTES,
                     index=INDEX_NAME,
                 ):
-                     if not success:
+                    if not success:
                         print("Failed")
 
                 break
             except Exception as error:
+                break
                 print(f"Connection error: {error}")
                 print("Retrying in 5 seconds...")
                 time.sleep(15)
