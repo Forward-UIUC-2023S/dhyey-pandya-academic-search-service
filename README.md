@@ -13,6 +13,7 @@ Make the following changes in the `config/elasticsearch.yml` file:
 ```
 elasticsearch.yml
 ```
+Note: Make Sure to change the host names in each node as per the ip addr of the underlying machine.
 
 ## Run Elasticsearch Nodes
 Run the Elasticsearch nodes one by one using the following command to start the Elasticsearch service as a daemon:
