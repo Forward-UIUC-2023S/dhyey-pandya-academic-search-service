@@ -48,7 +48,6 @@ curl --location 'http://172.22.224.151:9200/_cluster/health' \
 --data ''
 ```
 
-Feel free to modify and use this markdown file for your GitHub Readme.
 ```
 Change the Authorization key to the one provided when you first start the server. The key is different for each user.
 
