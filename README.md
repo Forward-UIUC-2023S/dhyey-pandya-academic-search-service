@@ -61,7 +61,7 @@ curl --location 'http://172.22.224.153:9200/_cat/allocation?v=null'
 curl --location 'http://172.22.224.152:9200/_cat/indices?v=null'
 ```
 
-# Read the `Academic Search System.pdf` File for my notes taken while doing this project, it has some useful information on issues faced, potential solutions and some useful commands. Its kind of a rough work, so dont mind it ;)
+##P.S Read the `Academic Search System.pdf` File for my notes taken while doing this project, it has some useful information on issues faced, potential solutions and some useful commands. Its kind of a rough work, so dont mind it ;)
 
 Feel Free to reach out on dhyeypandya3@gmail.com, if any queries.
 
