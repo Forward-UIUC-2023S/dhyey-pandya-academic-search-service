@@ -134,7 +134,7 @@ function App() {
         bool: {
           must: [
             { match: { abstract: searchTerm } },
-            { match: { "authorships.author.display_name": authorFilter } },
+            { match_phrase: { "authorships.author.display_name": authorFilter } },
             { match: { "authorships.institutions.display_name": selectedOption } }
           ]
         }
@@ -155,7 +155,7 @@ function App() {
         bool: {
           must: [
             { match: { abstract: searchTerm } },
-            { match: { "authorships.author.display_name": authorFilter } }
+            { match_phrase: { "authorships.author.display_name": authorFilter } }
           ]
         }
       };
@@ -170,7 +170,7 @@ function App() {
       };
     } else if (authorFilter) {
       query = {
-        match: {
+        match_phrase: {
           "authorships.author.display_name": authorFilter
         }
       };
