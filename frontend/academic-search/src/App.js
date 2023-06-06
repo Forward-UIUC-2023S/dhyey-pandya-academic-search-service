@@ -82,13 +82,14 @@ function App() {
   const [options, setOptions] = useState([]);
   const [selectedOption, setSelectedOption] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalHits, setTotalhits] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [timeTaken, setTimeTaken] = useState(0);
   const resultsPerPage = 10; // Number of results to display per page
 
   const indexOfLastResult = currentPage * resultsPerPage;
   const indexOfFirstResult = indexOfLastResult - resultsPerPage;
   const currentResults = results.slice(indexOfFirstResult, indexOfLastResult);
-
-  const totalPages = Math.ceil(results.length / resultsPerPage);
 
 
   useEffect(() => {
@@ -124,7 +125,7 @@ function App() {
     fetchData();
   }, []);
 
-  const handleSearch = () => {
+  const getQuery = () => {
     let query = {};
 
     if (searchTerm && authorFilter && selectedOption) {
@@ -137,10 +138,23 @@ function App() {
           ]
         }
       };
-    } else if (searchTerm) {
+    }
+    else if (authorFilter && selectedOption) {
+      query = {
+        bool: {
+          must: [
+            { match: { "authorships.author.display_name": authorFilter } },
+            { match: { "authorships.institutions.display_name": selectedOption } }
+          ]
+        }
+      };
+    }
+    else if (searchTerm) {
       query = {
         match: {
-          abstract: searchTerm
+          abstract: {
+            query: searchTerm
+          }
         }
       };
     } else if (authorFilter) {
@@ -157,30 +171,146 @@ function App() {
       };
 
     }
+
     else {
       // No search term or author name provided
       return;
     }
 
-    // console.log(query);
+    console.log(query);
+    return query;
+  }
+
+  const handleSearch = () => {
+    let query = getQuery();
+    const startTime = new Date().getTime();
 
     client.search({
       index: 'openalex_works',
       body: {
         query,
-        size: 100,
-        _source: ['display_name', 'publication_date', 'ids', 'authorships', 'abstract']
+        size: resultsPerPage,
+        track_total_hits: true,
+        _source: ['display_name', 'publication_date', 'ids', 'authorships', 'highlight', 'abstract'],
+        highlight: {
+          tags_schema: 'styled',
+          fields: {
+            abstract: {
+              pre_tags: ['<mark>'],
+              post_tags: ['</mark>']
+            }
+          }
+        },
+        sort: [
+          { _score: { order: 'desc' } },
+          { id: { order: 'asc' } }
+        ]
       }
     }).then(response => {
       const hits = response.hits.hits;
+      const endTime = new Date().getTime();
 
-      // const uniqueHits = Array.from(new Set(hits.map(hit => hit._source.id)))
-      //   .map(id => {
-      //     return hits.find(hit => hit._source.id === id);
-      //   });
+      const seconds = (endTime - startTime) / 1000; // Convert to seconds
+      const totalPages = Math.ceil(response.hits.total.value / resultsPerPage);
+      // console.log(response.hits.total.value);
+      // console.log(resultsPerPage);
+      setTimeTaken(seconds);
+      setTotalPages(totalPages);
+      setTotalhits(response.hits.total.value);
       setResults(hits);
-      console.log(hits);
+      // console.log(hits);
     });
+  };
+
+  const fetchNextPage = async () => {
+    try {
+      // setIsLoading(true);
+      let query = getQuery();
+      const lastResult = results[results.length - 1];
+      const lastResultSort = lastResult.sort; // Assuming your results have a sort field
+      const startTime = new Date().getTime();
+
+      console.log(lastResultSort);
+      const response = await client.search({
+        index: 'openalex_works',
+        body: {
+          query,
+          size: resultsPerPage,
+          track_total_hits: false,
+          _source: ['display_name', 'publication_date', 'ids', 'authorships', 'highlight', 'abstract'],
+          highlight: {
+            tags_schema: 'styled',
+            fields: {
+              abstract: {
+                pre_tags: ['<mark>'],
+                post_tags: ['</mark>']
+              }
+            }
+          },
+          search_after: lastResultSort,
+          sort: [
+            { _score: { order: 'desc' } },
+            { id: { order: 'asc' } }
+          ]
+        }
+      });
+
+      const hits = response.hits.hits;
+      const endTime = new Date().getTime();
+
+      const seconds = (endTime - startTime) / 1000; // Convert to seconds
+      setTimeTaken(seconds);
+      setResults(prevResults => [...prevResults, ...hits]);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const fetchPreviousPage = async () => {
+    try {
+      const firstResult = results[0];
+      const firstResultSort = firstResult.sort; // Assuming your results have a sort field
+
+      const response = await client.search({
+        index: 'openalex_works',
+        body: {
+          query: getQuery(),
+          size: resultsPerPage,
+          track_total_hits: false,
+          _source: ['display_name', 'publication_date', 'ids', 'authorships', 'highlight', 'abstract'],
+          highlight: {
+            tags_schema: 'styled',
+            fields: {
+              abstract: {
+                pre_tags: ['<mark>'],
+                post_tags: ['</mark>']
+              }
+            }
+          },
+          sort: [
+            { _score: { order: 'desc' } },
+            { id: { order: 'asc' } }
+          ],
+          search_before: firstResultSort
+        }
+      });
+
+      const hits = response.hits.hits.reverse();
+
+      setResults(prevResults => [...hits, ...prevResults]);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage(prevPage => prevPage + 1);
+    fetchNextPage();
+  };
+
+  const handlePreviousPage = () => {
+    setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
+    fetchPreviousPage();
   };
 
   const handleKeyPress = event => {
@@ -200,20 +330,6 @@ function App() {
   const handleSelect = (value) => {
     setSelectedOption(value);
   };
-
-  const AbstractButton = ({ abstract }) => {
-    const [showAbstract, setShowAbstract] = useState(false);
-
-    const toggleAbstract = () => setShowAbstract(!showAbstract);
-
-    return (
-      <div>
-        <button onClick={toggleAbstract}>{showAbstract ? 'Hide Abstract' : 'Show Abstract'}</button>
-        {showAbstract && <SearchResult text={abstract} searchQuery={searchTerm} />}
-      </div>
-    );
-  };
-
 
 
   return (
@@ -235,7 +351,8 @@ function App() {
         <Dropdown options={options} onSelect={handleSelect} />
       </div>
       <div style={{ marginTop: '50px', width: '60%' }}>
-        <span>Showing results {indexOfFirstResult + 1} - {indexOfLastResult} of {results.length}</span>
+        <span>Showing results {indexOfFirstResult + 1} - {indexOfLastResult} of {totalHits}</span>
+        <div>Time taken: {timeTaken} seconds</div>
         <ul>
           {currentResults.map(result => (
             <li key={result._id}>
@@ -243,20 +360,21 @@ function App() {
               <p>Authors: <SearchResult text={result._source.authorships.map(authorship => authorship.author.display_name).join(", ")} searchQuery={authorFilter} /></p>
               <p>Publication Date: {result._source.publication_date}</p>
               <a href={`https://doi.org/${result._source.ids.doi}`}>{result._source.ids.doi}</a>
-              <AbstractButton abstract={result._source.abstract} />
+              <h4>Abstract Snippet</h4>
+              {result.highlight && result.highlight.abstract && result.highlight.abstract.length > 0 && (
+                <span dangerouslySetInnerHTML={{ __html: result.highlight.abstract.slice(0, 2).join(' ........ ') }}></span>
+              )}
             </li>
           ))}
         </ul>
         <div>
-          {Array.from({ length: totalPages }, (_, index) => (
-            <button
-              key={index + 1}
-              onClick={() => setCurrentPage(index + 1)}
-              style={{ fontWeight: currentPage === index + 1 ? 'bold' : 'normal' }}
-            >
-              {index + 1}
-            </button>
-          ))}
+          <button onClick={handlePreviousPage} disabled={currentPage === 1}>
+            Previous Page
+          </button>
+          <span>Page {currentPage} of {totalPages}</span>
+          <button onClick={handleNextPage} disabled={currentPage === totalPages}>
+            Next Page
+          </button>
         </div>
       </div>
     </div>
