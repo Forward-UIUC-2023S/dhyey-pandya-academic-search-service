@@ -55,7 +55,7 @@ npm start
 ```
 The server will start on `localhost:9200` by default.
 
-#How to Update the data indexed?
+# How to Update the data indexed?
 1 - Download latest snapshot from Openalex
 ```
 aws s3 sync "s3://openalex" "openalex-snapshot" --no-sign-request
