@@ -46,35 +46,16 @@ Note: Update the source location of the data in the Python file accordingly.
 # Starting the React Web Server
 1. Change directory to `frontend/academic-search`
 2. Install the required dependencies:
-```bash
+```
 npm install
 ```
 3. Start the server:
-```bash
+```
 npm start
 ```
 The server will start on `localhost:9200` by default.
 
-```
-
 Note: if this is a second or later iteration of a module, you may reuse the old iteration's README as a starting point (you should still update it). 
-
-## Setup
-
-List the steps needed to install your module's dependencies: 
-
-1. Include what version of Python (e.g. 3.8.12) and what version of pip (e.g. 21.3.1) you used when running your module. If you do not specify these, other users may run into several problems when trying to install dependencies!
-
-2. Include a requirements.txt containing all of the python dependencies needed at your project's root (see this [link](https://stackoverflow.com/questions/31684375/automatically-create-requirements-txt) for instructions on how to create a requirements.txt). If you used a python virtual environment, use `pip freeze -l > requirements.txt` to generate your requirements.txt file. Make sure to include the below line somewhere in this section to tell users how to use your requirements.txt. 
-```
-pip install -r requirements.txt 
-```
-
-3. Additionally, list any other setup required to run your module such as installing MySQL or downloading data files that you module relies on. 
-
-4. Include instructions on how to run any tests you have written to verify your module is working properly. 
-
-It is very important to also include an overall breakdown of your repo's file structure. Let people know what is in each directory and where to look if they need something specific. This will also let users know how your repo needs to structured so that your module can work properly
 
 ```
 dhyey-pandya-academic-search-service/
