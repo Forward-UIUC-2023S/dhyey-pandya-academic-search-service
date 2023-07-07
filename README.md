@@ -55,6 +55,24 @@ npm start
 ```
 The server will start on `localhost:9200` by default.
 
+#How to Update the data indexed?
+1 - Download latest snapshot from Openalex
+```
+aws s3 sync "s3://openalex" "openalex-snapshot" --no-sign-request
+```
+
+2 - Run the Data Indexing script
+```
+python data_ingest_works.py
+```
+Below are configuration parameters to change to different index - Work, Author etc.
+```
+CHUNK_SIZE = 750 # This is the number of documents to be indexed in one request
+MAX_CHUNK_BYTES = 15* 1024 * 1024 # Size in MB of payload
+INDEX_NAME = "openalex_works" # Target Index
+JSON_DIR_NAME = "/scratch/dhyeyhp2/works/openalex-snapshot/"     #Source dir path of openale snapshot
+THREAD_COUNT = 4 # Number of threads you want to keep
+```
 Note: if this is a second or later iteration of a module, you may reuse the old iteration's README as a starting point (you should still update it). 
 
 ```
