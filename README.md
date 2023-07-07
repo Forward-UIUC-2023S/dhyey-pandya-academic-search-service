@@ -1,36 +1,3 @@
-
-## Useful Elasticsearch REST API Calls
-1. Check Cluster Health:
-```bash
-curl --location 'http://172.22.224.151:9200/_cluster/health' \
---header 'Authorization: Basic ZWxhc3RpYzpFN0FhSGZWUExaOTNiNzVaU2k9eQ==' \
---data ''
-```
-
-Change the Authorization key to the one provided when you first start the server. The key is different for each user.
-
-2. Check Cluster Disk Usage
-
-```
-curl --location 'http://172.22.224.153:9200/_cat/allocation?v=null'
-```
-
-3. See all the indices and its metadata in the cluster
-```
-curl --location 'http://172.22.224.152:9200/_cat/indices?v=null'
-```
-
-##P.S Read the `Academic Search System.pdf` File for my notes taken while doing this project, it has some useful information on issues faced, potential solutions and some useful commands. Its kind of a rough work, so dont mind it ;)
-
----------------
----------------
----------------
----------------
----------------
----------------
----------------
-
-
 # Academic Search Engine
 
 ## Overview
