@@ -135,6 +135,7 @@ In this section, please list all know issues, limitations, and possible areas fo
 * Can add result sorting by citation count, published date
 * Can add more search filters for Source, publication etc.
 * Can improve frontend to look more visually appealing. Currently its a very simplistic design.
+* Matches that return other authors' institution results can be fixed, so that only works of the author associated with correct institution are returned.
 
 
 ## Change log
