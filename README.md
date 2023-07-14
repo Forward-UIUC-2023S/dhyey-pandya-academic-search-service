@@ -127,6 +127,7 @@ We use ElasticSearch's native functionalities to achieve all API capabilities th
 
 ## Elasticsearch query API's and Use Cases
 
+Note: The URL endpoint is of Hawk Machine 2, which was one of the elasticsearch cluster node. Change it according to your cluster endpoint.
 ### Publications
 
 **Get all Unique publishers**
