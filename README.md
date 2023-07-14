@@ -130,7 +130,7 @@ We use ElasticSearch's native functionalities to achieve all API capabilities th
 Note: The IP address in the URL endpoints below is of Hawk Machine 2, which was one of the elasticsearch cluster node. Change it according to your cluster endpoint.
 ### Publications
 
-**Get all Unique publishers**
+**1. Get all Unique publishers**
 
 This can be used as a dropdown to filter results based on a specific publication.
 
@@ -168,7 +168,7 @@ curl --location --request GET 'http://172.22.224.151:9200/openalex_publishers/_s
 
 ```
 
-**Get publishers that are located in the United States (Country Code: US)**
+**2. Get publishers that are located in the United States (Country Code: US)**
 
 This can be used for advanced filters to further filter unique publications from the previous result.
 
@@ -209,7 +209,7 @@ curl --location --request GET 'http://172.22.224.151:9200/openalex_publishers/_s
 
 ### Works
 
-**Searching by external unique ID: Find all the Works with a unique external ID such as a DOI**
+**3. Searching by external unique ID: Find all the Works with a unique external ID such as a DOI**
 
 This can be used to fetch unique and specific works from the dataset.
 
@@ -244,7 +244,7 @@ curl --location --request GET 'http://172.22.224.152:9200/openalex_works/_search
            }
 ```
 
-**Searching by title: Users can search for works by entering keywords or phrases from the title of the document.**
+**4. Searching by title: Users can search for works by entering keywords or phrases from the title of the document.**
 
 Elasticsearch query API:
 
@@ -279,7 +279,7 @@ curl --location --request GET 'http://172.22.224.152:9200/openalex_works/_search
             }
 ```
 
-**Searching by author: Users can search for works by specifying the name of an author or a combination of authors.**
+**5. Searching by author: Users can search for works by specifying the name of an author or a combination of authors.**
 
 Elasticsearch query API:
 
@@ -324,7 +324,7 @@ curl --location --request GET 'http://172.22.224.152:9200/openalex_works/_search
                             ],
 ```
 
-**Searching by Author and Institution both: Users can search for works published by a specific author from a specific institution**
+**6. Searching by Author and Institution both: Users can search for works published by a specific author from a specific institution**
 
 Elasticsearch Query API:
 
@@ -380,7 +380,7 @@ curl --location --request GET 'http://172.22.224.152:9200/openalex_works/_search
                             ],
 ```
 
-**Searching by publication venue: Users can search for works published in a specific journal or conference by specifying the name or ISSN of the publication venue.**
+**7. Searching by publication venue: Users can search for works published in a specific journal or conference by specifying the name or ISSN of the publication venue.**
 
 Elasticsearch query API:
 
@@ -415,7 +415,7 @@ curl --location --request GET 'http://172.22.224.152:9200/openalex_works/_search
                         "host_organization": null,
 ```
 
-**Searching by publication date range: Users can search for works published in a particular year or within a specific date range. (For example, works published between Jan 1, 2023, to March 31, 2023)**
+**8. Searching by publication date range: Users can search for works published in a particular year or within a specific date range. (For example, works published between Jan 1, 2023, to March 31, 2023)**
 
 Elasticsearch query API:
 
@@ -450,7 +450,7 @@ curl --location --request GET 'http://172.22.224.152:9200/openalex_works/_search
                     },
 ```
 
-**Searching by concept: Users can search for works related to specific concepts or topics by using relevant keywords or identifiers associated with those concepts.**
+**9. Searching by concept: Users can search for works related to specific concepts or topics by using relevant keywords or identifiers associated with those concepts.**
 
 Elasticsearch query API:
 
@@ -494,7 +494,7 @@ curl --location --request GET 'http://172.22.224.152:9200/openalex_works/_search
                         
 ```
 
-**Searching by citation count: Users can search for works based on their citation count, allowing them to find highly cited or influential papers.**
+**10. Searching by citation count: Users can search for works based on their citation count, allowing them to find highly cited or influential papers.**
 
 Elasticsearch query API:
 
@@ -529,7 +529,7 @@ curl --location --request GET 'http://172.22.224.152:9200/openalex_works/_search
                                         },
 ```
 
-**Searching by related works: Users can explore related works of a specific paper by following the links to other documents that are related or cited by the current work.**
+**11. Searching by related works: Users can explore related works of a specific paper by following the links to other documents that are related or cited by the current work.**
 
 Elasticsearch query API:
 
@@ -569,7 +569,7 @@ curl --location --request GET 'http://172.22.224.152:9200/openalex_works/_search
                 }
 ```
 
-**Searching by full-text availability: Users can search on abstracts for works with open access, helping them find freely accessible research articles, and find relevant abstracts.**
+**11. Searching by full-text availability: Users can search on abstracts for works with open access, helping them find freely accessible research articles, and find relevant abstracts.**
 
 Elasticsearch query API:
 ```shell
